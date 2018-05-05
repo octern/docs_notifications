@@ -1,15 +1,15 @@
 /*
-       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~   
+       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
        Google Doc Monitor: Get Alerts When Any Google Document is Updated - Techawakening.org
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
-   
+
+
                       For instructions, go to http://techawakening.org/?p=3055
                       For queries, bugs reporting comment on the above article.
-   
+
                   Written by Shunmugha Sundaram for Techawakening.org - OCT 27, 2014
 
-            --.--        |                   |              o                          
+            --.--        |                   |              o
               |,---.,---.|---.,---.. . .,---.|__/ ,---.,---..,---.,---. ,---.,---.,---.
               ||---'|    |   |,---|| | |,---||  \ |---'|   |||   ||   | |   ||    |   |
               ``---'`---'`   '`---^`-'-'`---^`   ``---'`   '``   '`---|o`---'`    `---|
@@ -23,7 +23,7 @@ Apr-30-2018: Michael Cohn modified to check all docs inside a folder
 
 INSTRUCTIONS:
 * Open the spreadsheet this script is attached to and put the ID for the google drive folder to monitor in the designated space.
-* Example spreadsheet: https://docs.google.com/spreadsheets/d/1wpG_mY9CAon-E8gHK-Dm8Iw8D6rhA07V8BaviZ7xIcM/edit#gid=0 
+* Example spreadsheet: https://docs.google.com/spreadsheets/d/1wpG_mY9CAon-E8gHK-Dm8Iw8D6rhA07V8BaviZ7xIcM/edit#gid=0
 * Edit the variable "identifier" to specify a string that appears at the beginning of every file to monitor. (Use "" to monitor all files)
 * Set a trigger for the script to run regularly
 */
@@ -56,13 +56,13 @@ function processFiles(files, identifier) {
 
 
 function getFile_(fileId)
-{    
+{
     var file = DriveApp.getFileById(fileId);
     return file;
 }
 
 function getDoc_(fileId)
-{  
+{
    var doc = DocumentApp.openById(fileId);
    return doc;
 }
@@ -82,19 +82,28 @@ function monitorFile(fileId) {
     var userKey = getUserKey_(fileId);
     var previousComments = userProperties.getProperty(userKey);
     var comments = getComments(fileId);
-    
+
     if (comments != previousComments || previousComments == null) {
       Logger.log("Modified");
       var emails = getEmails(fileId);
-      
-      var emailSubject = "New Comment on " + file.getName();
-      var docLink = "https://docs.google.com/document/d/" + fileId;
-      var emailBody = emailSubject + "\n\n" +
-        "Here are all the comments:" + "\n\n" +
-          comments + "\n\n" +
-            docLink + "\n\n" +
-              "You are receiving this notification because your email is listed on the proposal under the Get Emails section. To unsubscribe, remove your email from the proposal.";
-      
+
+      if(previousComments == null) {
+          var emailSubject = "New Comment on " + file.getName();
+          var docLink = "https://docs.google.com/document/d/" + fileId;
+          var emailBody = emailSubject + "\n\n" +
+            "Here are all the comments:" + "\n\n" +
+              comments + "\n\n" +
+                docLink + "\n\n" +
+                  "You are receiving this notification because your email is listed on the proposal under the Get Emails section. To unsubscribe, remove your email from the proposal.";
+      }
+      else {
+          var emailSubject = "New proposal created: " + file.getName();
+          var docLink = "https://docs.google.com/document/d/" + fileId;
+          var emailBody = emailSubject + "\n\n" +
+            "A new proposal was created at \n\n" +
+                docLink + "\n\n" +
+                  "You will receive email notifications about comments that are added.";
+      }
       if(emails && emails.length >= 1) {
         Logger.log("attempting to email " + emails.join());
         for (var i = 0; i < emails.length; i++) {
@@ -103,10 +112,10 @@ function monitorFile(fileId) {
         }
 
       }
-      
+
       // update user property with new comments
       userProperties.setProperty(userKey, comments);
-      
+
     } else {
       Logger.log("Not Modified");
     }
@@ -119,7 +128,7 @@ function monitorFile(fileId) {
 function getEmails(fileId) {
     // email regex from stackoverflow
     var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  
+
     var doc = getDoc_(fileId);
     var body = doc.getBody();
     var text = body.getText();
@@ -146,7 +155,7 @@ function getComments(fileId) {
   var text = body.getText();
   var start = text.indexOf("Comments (anyone can write one)");
   var match = text.substring(start).trim(); // go until the end of the doc
-    
+
   return match;
 }
 
@@ -155,12 +164,12 @@ function authorize()
   spreadsheet.toast("Once authorized, enter File ID, Email IDs and select Google Doc Monitor-> Start Monitoring","",20);
 }
 
-function onOpen() 
+function onOpen()
 {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var menuEntries = [ {name: "1. Authorize", functionName: "authorize"},
     {name: "2. Start Monitoring", functionName: "startMonitoring"},
-    {name: "3. Stop Monitoring", functionName: "stopMonitoring"},        
+    {name: "3. Stop Monitoring", functionName: "stopMonitoring"},
   ];
   ss.addMenu("➤ Google Doc Monitor", menuEntries);
   spreadsheet.toast("Once Drive API has been enabled, Select Google Doc Monitor-> Authorize. This is an One Time Action.","Get Started",-1);
