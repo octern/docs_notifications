@@ -88,6 +88,14 @@ function monitorFile(fileId) {
       var emails = getEmails(fileId);
 
       if(previousComments == null) {
+          var emailSubject = "New proposal created: " + file.getName();
+          var docLink = "https://docs.google.com/document/d/" + fileId;
+          var emailBody = emailSubject + "\n\n" +
+            "A new proposal was created at \n\n" +
+                docLink + "\n\n" +
+                  "You will receive email notifications about comments that are added.";
+      }
+      else {
           var emailSubject = "New Comment on " + file.getName();
           var docLink = "https://docs.google.com/document/d/" + fileId;
           var emailBody = emailSubject + "\n\n" +
@@ -95,14 +103,6 @@ function monitorFile(fileId) {
               comments + "\n\n" +
                 docLink + "\n\n" +
                   "You are receiving this notification because your email is listed on the proposal under the Get Emails section. To unsubscribe, remove your email from the proposal.";
-      }
-      else {
-          var emailSubject = "New proposal created: " + file.getName();
-          var docLink = "https://docs.google.com/document/d/" + fileId;
-          var emailBody = emailSubject + "\n\n" +
-            "A new proposal was created at \n\n" +
-                docLink + "\n\n" +
-                  "You will receive email notifications about comments that are added.";
       }
       if(emails && emails.length >= 1) {
         Logger.log("attempting to email " + emails.join());
