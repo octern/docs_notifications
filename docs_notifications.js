@@ -29,7 +29,7 @@ INSTRUCTIONS:
 
 function main() {
   clearTriggers();
-  ScriptApp.newTrigger("processFiles").timeBased().everyMinutes(5).create();
+  ScriptApp.newTrigger("processFiles").timeBased().everyMinutes(10).create();
 }
 
 function clearTriggers() {
